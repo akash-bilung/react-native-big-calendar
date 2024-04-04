@@ -19,7 +19,6 @@ import {
   getOrderOfEvent,
   getRelativeTopInDay,
   hours,
-  isToday,
   SIMPLE_DATE_FORMAT,
   getMaxCountOfEventsAtEvent,
   getWidthOfEventsAtEvent,
@@ -102,8 +101,14 @@ function _CalendarBody<T extends ICalendarEventBase>({
   const { now } = useNow(!hideNowIndicator, date)
   const [nowIndicatorTop, setNowIndicatorTop] = React.useState(getRelativeTopInDay(now))
 
+  const checkIsCurrentDay = (cellDate: dayjs.Dayjs) => {
+    const targetDate = date ? dayjs(date) : dayjs()
+    return cellDate.isSame(targetDate, 'day')
+  }
+
   React.useEffect(() => {
-    setNowIndicatorTop(getRelativeTopInDay(dayjs(date)))
+    const targetDate = date ? dayjs(date) : dayjs()
+    setNowIndicatorTop(getRelativeTopInDay(targetDate))
   }, [now, date])
 
   React.useEffect(() => {
@@ -410,7 +415,7 @@ function _CalendarBody<T extends ICalendarEventBase>({
                 />
               ))}
               {_renderEvents(date)}
-              {isToday(date) && !hideNowIndicator && (
+              {checkIsCurrentDay(dayjs(date || dayjs())) && !hideNowIndicator && (
                 <View
                   style={[
                     styles.nowIndicator,
