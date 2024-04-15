@@ -1,4 +1,5 @@
 import dayjs from 'dayjs'
+import utc from 'dayjs/plugin/utc'
 import * as React from 'react'
 import { Platform, ScrollView, StyleSheet, TextStyle, View, ViewStyle } from 'react-native'
 
@@ -28,6 +29,8 @@ import { CalendarEvent } from './CalendarEvent'
 import { HourGuideCell } from './HourGuideCell'
 import { HourGuideColumn } from './HourGuideColumn'
 import { useMemo } from 'react'
+
+dayjs.extend(utc)
 
 const styles = StyleSheet.create({
   nowIndicator: {
