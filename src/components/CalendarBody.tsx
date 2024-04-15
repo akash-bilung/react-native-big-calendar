@@ -3,6 +3,7 @@ import utc from 'dayjs/plugin/utc'
 import * as React from 'react'
 import { Platform, ScrollView, StyleSheet, TextStyle, View, ViewStyle } from 'react-native'
 
+import { useMemo } from 'react'
 import { u } from '../commonStyles'
 import { useNow } from '../hooks/useNow'
 import { usePanResponder } from '../hooks/usePanResponder'
@@ -15,20 +16,18 @@ import {
 } from '../interfaces'
 import { useTheme } from '../theme/ThemeContext'
 import {
+  SIMPLE_DATE_FORMAT,
   enrichEvents,
   getCountOfEventsAtEvent,
-  getOrderOfEvent,
-  getRelativeTopInDay,
-  hours,
-  SIMPLE_DATE_FORMAT,
   getMaxCountOfEventsAtEvent,
+  getOrderOfEvent,
   getWidthOfEventsAtEvent,
+  hours,
 } from '../utils/datetime'
 import { typedMemo } from '../utils/react'
 import { CalendarEvent } from './CalendarEvent'
 import { HourGuideCell } from './HourGuideCell'
 import { HourGuideColumn } from './HourGuideColumn'
-import { useMemo } from 'react'
 
 dayjs.extend(utc)
 
@@ -43,7 +42,7 @@ const styles = StyleSheet.create({
 
 interface CalendarBodyProps<T extends ICalendarEventBase> {
   cellHeight: number
-  date?: Date
+  current?: Date
   containerHeight: number
   dateRange: dayjs.Dayjs[]
   events: T[]
@@ -73,7 +72,7 @@ interface CalendarBodyProps<T extends ICalendarEventBase> {
 
 function _CalendarBody<T extends ICalendarEventBase>({
   containerHeight,
-  date,
+  current,
   cellHeight,
   dateRange,
   style,
@@ -101,18 +100,7 @@ function _CalendarBody<T extends ICalendarEventBase>({
   eventsAreSorted = false,
 }: CalendarBodyProps<T>) {
   const scrollView = React.useRef<ScrollView>(null)
-  const { now } = useNow(!hideNowIndicator, date)
-  const [nowIndicatorTop, setNowIndicatorTop] = React.useState(getRelativeTopInDay(now))
-
-  const checkIsCurrentDay = (cellDate: dayjs.Dayjs) => {
-    const targetDate = date ? dayjs(date) : dayjs()
-    return cellDate.isSame(targetDate, 'day')
-  }
-
-  React.useEffect(() => {
-    const targetDate = date ? dayjs(date) : dayjs()
-    setNowIndicatorTop(getRelativeTopInDay(targetDate))
-  }, [now, date])
+  const { now } = useNow(!hideNowIndicator, current)
 
   React.useEffect(() => {
     let timeout: NodeJS.Timeout
@@ -418,7 +406,7 @@ function _CalendarBody<T extends ICalendarEventBase>({
                 />
               ))}
               {_renderEvents(date)}
-              {checkIsCurrentDay(dayjs(date || dayjs())) && !hideNowIndicator && (
+              {isToday(date, current) && !hideNowIndicator && (
                 <View
                   style={[
                     styles.nowIndicator,
